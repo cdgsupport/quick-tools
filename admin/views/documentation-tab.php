@@ -1,5 +1,11 @@
 <?php
-if (!defined('WPINC')) die;
+/**
+ * Documentation tab content
+ */
+
+if (!defined('WPINC')) {
+    die;
+}
 
 if (isset($_POST['submit_documentation'])) {
     if (!wp_verify_nonce($_POST['_wpnonce'], 'quick-tools-documentation-settings')) {
@@ -14,89 +20,149 @@ if (isset($_POST['submit_documentation'])) {
     $existing_settings['documentation_module_style'] = $_POST['documentation_module_style'] ?? 'informative';
     
     update_option('quick_tools_settings', $existing_settings);
-    echo '<div class="notice notice-success is-dismissible inline"><p>Documentation settings saved!</p></div>';
+    
+    echo '<div class="notice notice-success is-dismissible"><p>' . __('Documentation settings saved!', 'quick-tools') . '</p></div>';
 }
+
 $settings = get_option('quick_tools_settings', array());
-$module_style = $settings['documentation_module_style'] ?? 'informative';
+$module_style = isset($settings['documentation_module_style']) ? $settings['documentation_module_style'] : 'informative';
 ?>
 
-<form method="post" action="">
-    <?php wp_nonce_field('quick-tools-documentation-settings'); ?>
-    
-    <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+<div class="qt-tab-panel" id="documentation-panel">
+    <form method="post" action="">
+        <?php wp_nonce_field('quick-tools-documentation-settings'); ?>
         
-        <div style="flex: 1; min-width: 300px;">
-            <h3><?php _e('Widget Settings', 'quick-tools'); ?></h3>
-            
-            <div class="qt-card">
-                <div class="qt-card-body">
-                    <div class="qt-toggle-wrapper">
-                        <label class="qt-toggle">
-                            <input type="checkbox" name="show_documentation_widgets" value="1" 
-                                   <?php checked($settings['show_documentation_widgets'] ?? 1, 1); ?>>
-                            <span class="qt-slider"></span>
-                        </label>
-                        <span class="qt-text-muted"><strong>Show widgets on dashboard</strong></span>
-                    </div>
+        <div class="qt-settings-section">
+            <h2><?php _e('Documentation Dashboard Widgets', 'quick-tools'); ?></h2>
+            <p class="description">
+                <?php _e('Configure how documentation appears on the WordPress dashboard.', 'quick-tools'); ?>
+            </p>
 
-                    <div class="qt-mb-2">
-                        <p class="qt-text-muted qt-mb-2"><strong>Visual Style</strong></p>
-                        <div class="qt-btn-group">
-                            <input type="radio" id="doc_style_info" name="documentation_module_style" value="informative" <?php checked($module_style, 'informative'); ?>>
-                            <label for="doc_style_info">Informative</label>
-                            
-                            <input type="radio" id="doc_style_min" name="documentation_module_style" value="minimal" <?php checked($module_style, 'minimal'); ?>>
-                            <label for="doc_style_min">Minimal</label>
-                        </div>
-                    </div>
+            <table class="form-table" role="presentation">
+                <tbody>
+                    <tr>
+                        <th scope="row"><?php _e('Enable Documentation Widgets', 'quick-tools'); ?></th>
+                        <td>
+                            <fieldset>
+                                <label>
+                                    <input type="checkbox" name="show_documentation_widgets" 
+                                           value="1" <?php 
+                                           $checked_value = isset($settings['show_documentation_widgets']) ? $settings['show_documentation_widgets'] : 1;
+                                           if ($checked_value == 1) echo 'checked="checked"'; 
+                                           ?>>
+                                    <?php _e('Show documentation widgets on the dashboard', 'quick-tools'); ?>
+                                </label>
+                            </fieldset>
+                        </td>
+                    </tr>
 
-                    <div class="qt-informative-options" <?php echo $module_style === 'minimal' ? 'style="display:none; margin-top:20px;"' : 'style="margin-top:20px;"'; ?>>
-                        <div class="qt-mb-2">
-                            <label>Items per Widget</label><br>
-                            <input type="number" class="small-text" name="documentation_widget_limit" max="10" min="1" 
-                                   value="<?php echo esc_attr($settings['documentation_widget_limit'] ?? 5); ?>">
-                        </div>
-                        <div class="qt-toggle-wrapper" style="margin-top: 15px;">
-                            <label class="qt-toggle" style="transform:scale(0.8)">
-                                <input type="checkbox" name="show_documentation_status" value="1" 
-                                       <?php checked($settings['show_documentation_status'] ?? 1, 1); ?>>
-                                <span class="qt-slider"></span>
-                            </label>
-                            <span class="qt-text-muted">Show Status Indicators</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    <tr>
+                        <th scope="row"><?php _e('Module Style', 'quick-tools'); ?></th>
+                        <td>
+                            <fieldset>
+                                <div class="qt-module-style-options">
+                                    <label class="qt-module-style-option">
+                                        <input type="radio" name="documentation_module_style" 
+                                               value="informative" 
+                                               <?php checked($module_style, 'informative'); ?>>
+                                        <span class="qt-module-style-label">
+                                            <strong><?php _e('Informative', 'quick-tools'); ?></strong>
+                                            <span class="qt-module-style-description">
+                                                <?php _e('One widget per category with documentation items listed', 'quick-tools'); ?>
+                                            </span>
+                                        </span>
+                                    </label>
+                                    
+                                    <label class="qt-module-style-option">
+                                        <input type="radio" name="documentation_module_style" 
+                                               value="minimal" 
+                                               <?php checked($module_style, 'minimal'); ?>>
+                                        <span class="qt-module-style-label">
+                                            <strong><?php _e('Minimal', 'quick-tools'); ?></strong>
+                                            <span class="qt-module-style-description">
+                                                <?php _e('Single widget with one button per category', 'quick-tools'); ?>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </fieldset>
+                        </td>
+                    </tr>
+
+                    <tr class="qt-informative-options" <?php echo $module_style === 'minimal' ? 'style="display:none;"' : ''; ?>>
+                        <th scope="row"><?php _e('Items per Widget', 'quick-tools'); ?></th>
+                        <td>
+                            <input type="number" name="documentation_widget_limit" 
+                                   value="<?php echo esc_attr(isset($settings['documentation_widget_limit']) ? $settings['documentation_widget_limit'] : 5); ?>"
+                                   min="1" max="10" class="small-text">
+                        </td>
+                    </tr>
+
+                    <tr class="qt-informative-options" <?php echo $module_style === 'minimal' ? 'style="display:none;"' : ''; ?>>
+                        <th scope="row"><?php _e('Status Indicators', 'quick-tools'); ?></th>
+                        <td>
+                            <fieldset>
+                                <label>
+                                    <input type="checkbox" name="show_documentation_status" 
+                                           value="1" <?php 
+                                           $checked_value = isset($settings['show_documentation_status']) ? $settings['show_documentation_status'] : 1;
+                                           if ($checked_value == 1) echo 'checked="checked"'; 
+                                           ?>>
+                                    <?php _e('Show publication status in widgets', 'quick-tools'); ?>
+                                </label>
+                            </fieldset>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <div style="flex: 0 0 300px;">
-            <h3><?php _e('Actions', 'quick-tools'); ?></h3>
-            
-            <div style="margin-bottom: 20px;">
-                <a href="<?php echo admin_url('post-new.php?post_type=qt_documentation'); ?>" 
-                   class="button button-primary button-large qt-full-width qt-mb-2" style="text-align:center; margin-bottom:10px;">
-                    Add New Documentation
-                </a>
+        <div class="qt-settings-section">
+            <h2><?php _e('Documentation Categories', 'quick-tools'); ?></h2>
+            <div class="qt-categories-overview">
+                <?php
+                $categories = get_terms(array(
+                    'taxonomy' => 'qt_documentation_category',
+                    'hide_empty' => false,
+                ));
+
+                if (!empty($categories) && !is_wp_error($categories)) {
+                    echo '<div class="qt-categories-grid">';
+                    foreach ($categories as $category) {
+                        echo '<div class="qt-category-card">';
+                        echo '<h4>' . esc_html($category->name) . '</h4>';
+                        echo '<p class="qt-category-count">' . $category->count . ' ' . __('items', 'quick-tools') . '</p>';
+                        echo '</div>';
+                    }
+                    echo '</div>';
+                }
+                ?>
+            </div>
+
+            <p>
                 <a href="<?php echo admin_url('edit-tags.php?taxonomy=qt_documentation_category&post_type=qt_documentation'); ?>" 
-                   class="button button-secondary qt-full-width" style="text-align:center;">
-                    Manage Categories
+                   class="button button-secondary">
+                    <?php _e('Manage Categories', 'quick-tools'); ?>
                 </a>
-            </div>
+                <a href="<?php echo admin_url('post-new.php?post_type=qt_documentation'); ?>" 
+                   class="button button-primary">
+                    <?php _e('Add New Documentation', 'quick-tools'); ?>
+                </a>
+            </p>
         </div>
-    </div>
 
-    <p class="submit">
-        <button type="submit" name="submit_documentation" class="button button-primary button-large">
-            Save Settings
-        </button>
-    </p>
-</form>
+        <?php submit_button(__('Save Documentation Settings', 'quick-tools'), 'primary', 'submit_documentation'); ?>
+    </form>
+</div>
 
-<script>
+<script type="text/javascript">
 jQuery(document).ready(function($) {
     $('input[name="documentation_module_style"]').on('change', function() {
-        if ($(this).val() === 'minimal') $('.qt-informative-options').slideUp(200);
-        else $('.qt-informative-options').slideDown(200);
+        if ($(this).val() === 'minimal') {
+            $('.qt-informative-options').hide();
+        } else {
+            $('.qt-informative-options').show();
+        }
     });
 });
 </script>
