@@ -131,6 +131,13 @@
             });
         },
 
+        // Helper function to escape HTML
+        escapeHtml: function(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        },
+
         displaySearchResults: function(results) {
             const $results = $('#qt-search-results');
             
@@ -142,20 +149,20 @@
             let html = '';
             results.forEach(function(result) {
                 html += '<div class="qt-search-result">';
-                html += '<h4><a href="' + result.view_url + '">' + result.title + '</a></h4>';
-                html += '<p>' + result.excerpt + '</p>';
+                html += '<h4><a href="' + QuickToolsAdmin.escapeHtml(result.view_url) + '">' + QuickToolsAdmin.escapeHtml(result.title) + '</a></h4>';
+                html += '<p>' + QuickToolsAdmin.escapeHtml(result.excerpt) + '</p>';
                 
                 if (result.categories.length > 0) {
                     html += '<div class="qt-search-categories">';
                     result.categories.forEach(function(category) {
-                        html += '<span class="qt-search-category">' + category + '</span>';
+                        html += '<span class="qt-search-category">' + QuickToolsAdmin.escapeHtml(category) + '</span>';
                     });
                     html += '</div>';
                 }
                 
                 html += '<div class="qt-search-actions">';
-                html += '<a href="' + result.view_url + '" class="button button-small">View</a> ';
-                html += '<a href="' + result.edit_url + '" class="button button-small button-secondary">Edit</a>';
+                html += '<a href="' + QuickToolsAdmin.escapeHtml(result.view_url) + '" class="button button-small">View</a> ';
+                html += '<a href="' + QuickToolsAdmin.escapeHtml(result.edit_url) + '" class="button button-small button-secondary">Edit</a>';
                 html += '</div>';
                 html += '</div>';
             });
