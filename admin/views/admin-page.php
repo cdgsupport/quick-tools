@@ -79,6 +79,16 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'documen
             $doc_count = wp_count_posts(Quick_Tools_Documentation::POST_TYPE);
             $settings = get_option('quick_tools_settings', array());
             $selected_cpts = isset($settings['selected_cpts']) ? count($settings['selected_cpts']) : 0;
+            
+            // Get actual category count instead of hardcoded default
+            $category_count = wp_count_terms(array(
+                'taxonomy' => Quick_Tools_Documentation::TAXONOMY,
+                'hide_empty' => false,
+            ));
+            // Handle WP_Error case
+            if (is_wp_error($category_count)) {
+                $category_count = 0;
+            }
             ?>
             <ul class="qt-stats-list">
                 <li>
@@ -90,7 +100,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'documen
                     <?php _e('Active CPT Widgets', 'quick-tools'); ?>
                 </li>
                 <li>
-                    <strong><?php echo esc_html(count(Quick_Tools_Documentation::DEFAULT_CATEGORIES)); ?></strong>
+                    <strong><?php echo esc_html($category_count); ?></strong>
                     <?php _e('Documentation Categories', 'quick-tools'); ?>
                 </li>
             </ul>
