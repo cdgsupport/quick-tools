@@ -1,35 +1,37 @@
 <?php
+declare(strict_types=1);
+
 /**
  * The core plugin class.
  *
  * This is used to define internationalization, admin-specific hooks, and
  * public-facing site hooks.
+ *
+ * @package QuickTools
+ * @since 1.0.0
  */
 class Quick_Tools {
 
     /**
      * The loader that's responsible for maintaining and registering all hooks.
      *
-     * @access   protected
-     * @var      Quick_Tools_Loader    $loader
+     * @var Quick_Tools_Loader
      */
-    protected $loader;
+    protected Quick_Tools_Loader $loader;
 
     /**
      * The unique identifier of this plugin.
      *
-     * @access   protected
-     * @var      string    $plugin_name
+     * @var string
      */
-    protected $plugin_name;
+    protected string $plugin_name;
 
     /**
      * The current version of the plugin.
      *
-     * @access   protected
-     * @var      string    $version
+     * @var string
      */
-    protected $version;
+    protected string $version;
 
     /**
      * Define the core functionality of the plugin.
@@ -47,7 +49,7 @@ class Quick_Tools {
     /**
      * Load the required dependencies for this plugin.
      */
-    private function load_dependencies() {
+    private function load_dependencies(): void {
         /**
          * The class responsible for orchestrating the actions and filters of the core plugin.
          */
@@ -79,7 +81,7 @@ class Quick_Tools {
     /**
      * Define the locale for this plugin for internationalization.
      */
-    private function set_locale() {
+    private function set_locale(): void {
         $plugin_i18n = new Quick_Tools_i18n();
         $this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
     }
@@ -87,7 +89,7 @@ class Quick_Tools {
     /**
      * Register all of the hooks related to the admin area functionality.
      */
-    private function define_admin_hooks() {
+    private function define_admin_hooks(): void {
         $plugin_admin = new Quick_Tools_Admin($this->get_plugin_name(), $this->get_version());
 
         $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
@@ -104,7 +106,7 @@ class Quick_Tools {
     /**
      * Register all dashboard-related hooks.
      */
-    private function define_dashboard_hooks() {
+    private function define_dashboard_hooks(): void {
         $documentation = new Quick_Tools_Documentation();
         $cpt_dashboard = new Quick_Tools_CPT_Dashboard();
 
@@ -121,28 +123,34 @@ class Quick_Tools {
     /**
      * Run the loader to execute all of the hooks with WordPress.
      */
-    public function run() {
+    public function run(): void {
         $this->loader->run();
     }
 
     /**
      * The name of the plugin used to uniquely identify it.
+     *
+     * @return string The plugin name.
      */
-    public function get_plugin_name() {
+    public function get_plugin_name(): string {
         return $this->plugin_name;
     }
 
     /**
      * The reference to the class that orchestrates the hooks with the plugin.
+     *
+     * @return Quick_Tools_Loader The loader instance.
      */
-    public function get_loader() {
+    public function get_loader(): Quick_Tools_Loader {
         return $this->loader;
     }
 
     /**
      * Retrieve the version number of the plugin.
+     *
+     * @return string The plugin version.
      */
-    public function get_version() {
+    public function get_version(): string {
         return $this->version;
     }
 }
