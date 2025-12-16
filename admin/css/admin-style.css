@@ -489,12 +489,14 @@
     gap: 8px;
     padding: 10px 15px !important;
     font-size: 14px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
 }
 
 .qt-minimal-button .dashicons {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+    flex-shrink: 0;
 }
 
 /* Informative Widget Style - Updated Grid Layout */
@@ -507,7 +509,9 @@
 
 .qt-doc-grid-item {
     display: flex;
-    min-width: 0; /* Important for text overflow handling */
+    min-width: 0;
+    max-width:100%;
+    overflow:hidden
 }
 
 .qt-doc-button {
@@ -518,12 +522,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
+    max-width: 100%;
+    overflow: hidden;
     word-wrap: break-word;
-    word-break: break-word; /* Added for better word breaking */
+    word-break: break-word;
+    overflow-wrap: break-word;
     white-space: normal;
     line-height: 1.4;
-    hyphens: auto; /* Allow hyphenation for very long words */
-}
+    hyphens: auto;
 
 .qt-doc-button .qt-doc-status {
     margin-left: 8px;
@@ -612,11 +619,16 @@
 
 .qt-doc-card h3 {
     margin: 0 0 12px 0;
+    overflow: hidden;
 }
 
 .qt-doc-card h3 a {
     text-decoration: none;
     color: #1d2327;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .qt-doc-card h3 a:hover {
@@ -718,9 +730,13 @@
 
 .qt-recent-title {
     flex: 1;
+    min-width: 0;
     text-decoration: none;
     color: #2271b1;
     font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .qt-recent-status {
@@ -826,11 +842,16 @@
 
 .qt-search-result h4 {
     margin: 0 0 8px 0;
+    overflow: hidden;
 }
 
 .qt-search-result h4 a {
     text-decoration: none;
     color: #2271b1;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .qt-search-categories {
