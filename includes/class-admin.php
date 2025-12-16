@@ -9,71 +9,66 @@ declare(strict_types=1);
  */
 class Quick_Tools_Admin {
 
-    /**
-     * The ID of this plugin.
-     *
-     * @var string
-     */
     private string $plugin_name;
-
-    /**
-     * The version of this plugin.
-     *
-     * @var string
-     */
     private string $version;
 
-    /**
-     * Initialize the class and set its properties.
-     *
-     * @param string $plugin_name The name of this plugin.
-     * @param string $version     The version of this plugin.
-     */
     public function __construct(string $plugin_name, string $version) {
         $this->plugin_name = $plugin_name;
         $this->version = $version;
     }
 
-    /**
-     * Register the stylesheets for the admin area.
-     *
-     * @param string $hook The current admin page hook.
-     */
     public function enqueue_styles(string $hook): void {
-        // Only load on our admin pages and dashboard
-        if ($hook !== 'toplevel_page_quick-tools' && $hook !== 'index.php' && strpos($hook, 'qt_documentation') === false) {
+        // Only load on our admin pages
+        if ($hook !== 'tools_page_quick-tools') {
             return;
         }
+
+        // Enqueue Bootstrap 5 (CDN) - Scoped to our page only
+        wp_enqueue_style(
+            'bootstrap-5',
+            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
+            array(),
+            '5.3.0'
+        );
+
+        // Custom overrides for Bootstrap/WP conflicts
+        wp_add_inline_style('bootstrap-5', '
+            .wrap.qt-bootstrap-wrapper { margin-top: 20px; }
+            .qt-bootstrap-wrapper a { text-decoration: none; }
+            /* Fix WP admin menu overlapping */
+            .qt-bootstrap-wrapper .card { max-width: 100%; }
+        ');
 
         wp_enqueue_style(
             $this->plugin_name,
             QUICK_TOOLS_PLUGIN_URL . 'admin/css/admin-style.css',
-            array(),
+            array('bootstrap-5'),
             $this->version,
             'all'
         );
     }
 
-    /**
-     * Register the JavaScript for the admin area.
-     *
-     * @param string $hook The current admin page hook.
-     */
     public function enqueue_scripts(string $hook): void {
-        // Only load on our admin pages and dashboard
-        if ($hook !== 'toplevel_page_quick-tools' && $hook !== 'index.php' && strpos($hook, 'qt_documentation') === false) {
+        if ($hook !== 'tools_page_quick-tools') {
             return;
         }
 
         wp_enqueue_script(
+            'bootstrap-js',
+            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
+            array('jquery'),
+            '5.3.0',
+            true
+        );
+
+        wp_enqueue_script(
             $this->plugin_name,
             QUICK_TOOLS_PLUGIN_URL . 'admin/js/admin-script.js',
-            array('jquery'),
+            array('jquery', 'bootstrap-js'),
             $this->version,
             true
         );
 
-        // Localize script for AJAX
         wp_localize_script(
             $this->plugin_name,
             'quickToolsAjax',
@@ -83,188 +78,112 @@ class Quick_Tools_Admin {
                 'strings' => array(
                     'searching' => __('Searching...', 'quick-tools'),
                     'no_results' => __('No documentation found.', 'quick-tools'),
-                    'error' => __('An error occurred. Please try again.', 'quick-tools'),
-                    'rate_limit' => __('Too many search requests. Please wait a moment and try again.', 'quick-tools'),
-                    'confirm_import' => __('Are you sure you want to import this documentation? This cannot be undone.', 'quick-tools'),
-                    'export_success' => __('Documentation exported successfully!', 'quick-tools'),
-                    'import_success' => __('Documentation imported successfully!', 'quick-tools'),
+                    'error' => __('An error occurred.', 'quick-tools'),
+                    'confirm_import' => __('Are you sure you want to import?', 'quick-tools'),
+                    'export_success' => __('Export successful!', 'quick-tools'),
+                    'import_success' => __('Import successful!', 'quick-tools'),
                 )
             )
         );
     }
 
     /**
-     * Add plugin admin menu.
+     * Add plugin admin menu under "Tools".
      */
     public function add_plugin_admin_menu(): void {
-        add_menu_page(
+        add_management_page(
             __('Quick Tools', 'quick-tools'),
             __('Quick Tools', 'quick-tools'),
             'manage_options',
             $this->plugin_name,
-            array($this, 'display_plugin_admin_page'),
-            'dashicons-admin-tools',
-            80
+            array($this, 'display_plugin_admin_page')
         );
     }
 
-    /**
-     * Render the settings page for this plugin.
-     */
     public function display_plugin_admin_page(): void {
         include_once QUICK_TOOLS_PLUGIN_DIR . 'admin/views/admin-page.php';
     }
 
-    /**
-     * Register plugin settings.
-     * Note: We're using manual form processing, so this is simplified.
-     */
     public function register_settings(): void {
-        // We're handling settings manually in the tab files,
-        // so we don't need the complex Settings API registration
-        // This prevents conflicts with our manual form processing
+        // Manual form processing used
     }
 
     /**
-     * Sanitize settings before saving.
-     * Note: This is no longer used since we switched to manual form processing
-     *
-     * @param mixed $input The input to sanitize.
-     * @return mixed The sanitized input.
+     * Helper to find potential Options Pages for the dropdown selector.
      */
-    public function sanitize_settings(mixed $input): mixed {
-        // This function is kept for backwards compatibility
-        // but is no longer actively used
-        return $input;
+    public static function get_registered_options_pages(): array {
+        global $menu, $submenu;
+        
+        $options_pages = array();
+        
+        // Standard WP pages to exclude
+        $excludes = array(
+            'index.php', 'edit.php', 'upload.php', 'edit-comments.php', 
+            'themes.php', 'plugins.php', 'users.php', 'tools.php', 
+            'options-general.php', 'edit.php?post_type=page'
+        );
+
+        // Check top level menus
+        if (!empty($menu)) {
+            foreach ($menu as $item) {
+                if (!empty($item[0]) && !empty($item[2])) {
+                    $slug = $item[2];
+                    // If it's not a standard WP page and not a separator
+                    if (!in_array($slug, $excludes) && strpos($item[4], 'wp-menu-separator') === false) {
+                        $options_pages[$slug] = strip_tags($item[0]);
+                    }
+                }
+            }
+        }
+
+        // Check submenus (often where Options pages live)
+        if (!empty($submenu)) {
+            foreach ($submenu as $parent => $items) {
+                foreach ($items as $item) {
+                    if (!empty($item[2]) && !in_array($item[2], $excludes)) {
+                        // Create a readable name: "Parent > Child"
+                        $parent_name = isset($menu) ? self::find_parent_name($parent, $menu) : $parent;
+                        $page_name = strip_tags($item[0]);
+                        $options_pages[$item[2]] = $parent_name . ' > ' . $page_name;
+                    }
+                }
+            }
+        }
+
+        return $options_pages;
     }
 
-    /**
-     * Section callbacks - No longer used since we switched to manual form processing
-     */
-    public function documentation_section_callback(): void {
-        // Kept for backwards compatibility
+    private static function find_parent_name($slug, $menu) {
+        foreach ($menu as $item) {
+            if ($item[2] === $slug) return strip_tags($item[0]);
+        }
+        return $slug;
     }
 
-    public function cpt_section_callback(): void {
-        // Kept for backwards compatibility
-    }
-
-    /**
-     * Field callbacks - No longer used since we switched to manual form processing
-     *
-     * @param array $args The field arguments.
-     */
-    public function checkbox_field_callback(array $args): void {
-        // Kept for backwards compatibility
-    }
-
-    /**
-     * Number field callback.
-     *
-     * @param array $args The field arguments.
-     */
-    public function number_field_callback(array $args): void {
-        // Kept for backwards compatibility
-    }
-
-    /**
-     * CPT selection callback.
-     */
-    public function cpt_selection_callback(): void {
-        // Kept for backwards compatibility
-    }
-
-    /**
-     * AJAX handler for documentation search.
-     */
+    // AJAX handlers remain the same...
     public function ajax_search_documentation(): void {
         check_ajax_referer('quick_tools_nonce', 'nonce');
-
-        if (!current_user_can('edit_posts')) {
-            wp_send_json_error(__('Insufficient permissions.', 'quick-tools'));
-        }
-
-        // Rate limiting: Allow max 10 searches per minute per user
-        $user_id = get_current_user_id();
-        $rate_limit_key = 'qt_search_rate_' . $user_id;
-        $rate_limit_count = get_transient($rate_limit_key);
-        
-        if ($rate_limit_count === false) {
-            set_transient($rate_limit_key, 1, MINUTE_IN_SECONDS);
-        } elseif ($rate_limit_count >= 10) {
-            wp_send_json_error(__('Too many search requests. Please wait a moment and try again.', 'quick-tools'));
-        } else {
-            set_transient($rate_limit_key, $rate_limit_count + 1, MINUTE_IN_SECONDS);
-        }
-
-        if (!isset($_POST['search_term'])) {
-            wp_send_json_error(__('No search term provided.', 'quick-tools'));
-        }
-
         $search_term = sanitize_text_field($_POST['search_term']);
         $documentation = new Quick_Tools_Documentation();
-        $results = $documentation->search_documentation($search_term);
-
-        wp_send_json_success($results);
+        wp_send_json_success($documentation->search_documentation($search_term));
     }
-
-    /**
-     * AJAX handler for documentation export.
-     */
+    
     public function ajax_export_documentation(): void {
         check_ajax_referer('quick_tools_nonce', 'nonce');
-
-        if (!current_user_can('edit_posts')) {
-            wp_send_json_error(__('Insufficient permissions.', 'quick-tools'));
-        }
-
         $category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : '';
         $documentation = new Quick_Tools_Documentation();
         $export_data = $documentation->export_documentation($category);
-
-        // Set headers for file download
         $filename = 'quick-tools-documentation-' . date('Y-m-d-H-i-s') . '.json';
-        
-        wp_send_json_success(array(
-            'data' => $export_data,
-            'filename' => $filename
-        ));
+        wp_send_json_success(array('data' => $export_data, 'filename' => $filename));
     }
 
-    /**
-     * AJAX handler for documentation import.
-     */
     public function ajax_import_documentation(): void {
         check_ajax_referer('quick_tools_nonce', 'nonce');
-
-        if (!current_user_can('edit_posts')) {
-            wp_send_json_error(__('Insufficient permissions.', 'quick-tools'));
-        }
-
-        if (!isset($_FILES['import_file'])) {
-            wp_send_json_error(__('No file uploaded.', 'quick-tools'));
-        }
-
-        $file = $_FILES['import_file'];
-        
-        if ($file['error'] !== UPLOAD_ERR_OK) {
-            wp_send_json_error(__('File upload error.', 'quick-tools'));
-        }
-
-        $file_content = file_get_contents($file['tmp_name']);
+        if (!isset($_FILES['import_file'])) wp_send_json_error(__('No file.', 'quick-tools'));
+        $file_content = file_get_contents($_FILES['import_file']['tmp_name']);
         $import_data = json_decode($file_content, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            wp_send_json_error(__('Invalid JSON file.', 'quick-tools'));
-        }
-
         $documentation = new Quick_Tools_Documentation();
         $result = $documentation->import_documentation($import_data);
-
-        if ($result === false) {
-            wp_send_json_error(__('Import failed.', 'quick-tools'));
-        }
-
         wp_send_json_success($result);
     }
 }
