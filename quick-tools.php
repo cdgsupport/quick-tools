@@ -13,7 +13,7 @@ declare(strict_types=1);
  * Plugin Name:       Quick Tools
  * Plugin URI:        https://crawforddesigngp.com/plugins/quick-tools
  * Description:       Adds configurable documentation dashboard widgets and quick CPT creation tools for efficient website management.
- * Version:           1.2.1
+ * Version:           1.3.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            Crawford Design Group
