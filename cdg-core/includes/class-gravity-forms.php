@@ -27,12 +27,7 @@ class CDG_Core_Gravity_Forms
   public function __construct(CDG_Core $plugin)
   {
     $this->plugin = $plugin;
-
-    // Only setup if Gravity Forms is active
-    if (!class_exists("GFForms")) {
-      return;
-    }
-
+    // Always setup hooks; individual methods will check if GF is active later
     $this->setup_hooks();
   }
 
