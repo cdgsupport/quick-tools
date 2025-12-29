@@ -101,7 +101,7 @@ class CDG_Core_Cleanup
           }
 
           // Skip our own widgets
-          if (strpos($id, "cdg_") === 0) {
+          if (strpos((string) $id, "cdg_") === 0) {
             continue;
           }
 
@@ -440,7 +440,7 @@ class CDG_Core_Cleanup
     }
 
     // Check in Divi content
-    if (strpos($post->post_content, "[gravityform") !== false) {
+    if (strpos((string) $post->post_content, "[gravityform") !== false) {
       return true;
     }
 
