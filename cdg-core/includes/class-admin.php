@@ -130,6 +130,27 @@ class CDG_Core_Admin
                 $s["recent_posts_limit"] = absint(
                     $input["recent_posts_limit"] ?? 3,
                 );
+                break;
+
+            case "defaults":
+                // Disable Comments
+                $s["disable_comments"] = !empty($input["disable_comments"]);
+
+                // Divi Projects
+                $s["hide_divi_projects"] = !empty($input["hide_divi_projects"]);
+                $s["enable_project_rename"] = !empty($input["enable_project_rename"]);
+                $s["project_rename_plural"] = sanitize_text_field(
+                    $input["project_rename_plural"] ?? "Projects",
+                );
+                $s["project_rename_singular"] = sanitize_text_field(
+                    $input["project_rename_singular"] ?? "Project",
+                );
+                $s["project_rename_menu"] = sanitize_text_field(
+                    $input["project_rename_menu"] ?? "Projects",
+                );
+                $s["project_rename_icon"] = sanitize_text_field(
+                    $input["project_rename_icon"] ?? "dashicons-portfolio",
+                );
 
                 // Post Rename
                 $s["enable_post_rename"] = !empty($input["enable_post_rename"]);
@@ -287,6 +308,7 @@ class CDG_Core_Admin
         $active_tab = sanitize_text_field($_GET["tab"] ?? "features");
         $tabs = [
             "features" => __("Features", "cdg-core"),
+            "defaults" => __("Defaults", "cdg-core"),
             "cleanup" => __("WordPress Cleanup", "cdg-core"),
             "security" => __("Security", "cdg-core"),
             "performance" => __("Performance", "cdg-core"),
@@ -339,6 +361,9 @@ class CDG_Core_Admin
         switch ($tab) {
             case "features":
                 $this->tab_features($s);
+                break;
+            case "defaults":
+                $this->tab_defaults($s);
                 break;
             case "cleanup":
                 $this->tab_cleanup($s);
@@ -449,40 +474,121 @@ class CDG_Core_Admin
                     </div>
                 </td>
             </tr>
+        </table>
+        <?php
+    }
+
+    private function tab_defaults(array $s): void
+    {
+        ?>
+        <h2><?php esc_html_e("WordPress Comments", "cdg-core"); ?></h2>
+        <table class="form-table">
+            <tr>
+                <th><?php esc_html_e("Disable Comments", "cdg-core"); ?></th>
+                <td>
+                    <label>
+                        <input type="checkbox" name="disable_comments" value="1" <?php checked($s["disable_comments"]); ?>>
+                        <?php esc_html_e("Completely disable WordPress comments", "cdg-core"); ?>
+                    </label>
+                    <p class="description">
+                        <?php esc_html_e("This will remove comments from all post types, hide the Comments menu, disable the Discussion settings page, and block access to comment-related admin pages.", "cdg-core"); ?>
+                    </p>
+                </td>
+            </tr>
+        </table>
+
+        <h2><?php esc_html_e("Divi Projects", "cdg-core"); ?></h2>
+        <table class="form-table">
+            <tr>
+                <th><?php esc_html_e("Hide Projects", "cdg-core"); ?></th>
+                <td>
+                    <label>
+                        <input type="checkbox" name="hide_divi_projects" value="1" <?php checked($s["hide_divi_projects"]); ?>>
+                        <?php esc_html_e("Hide Divi Projects post type", "cdg-core"); ?>
+                    </label>
+                    <p class="description">
+                        <?php esc_html_e("This will unregister Divi's built-in Projects post type and its taxonomies (Project Categories and Tags).", "cdg-core"); ?>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <th><?php esc_html_e("Rename Projects", "cdg-core"); ?></th>
+                <td>
+                    <label>
+                        <input type="checkbox" name="enable_project_rename" value="1" <?php checked($s["enable_project_rename"]); ?>>
+                        <?php esc_html_e('Rename "Projects" post type', "cdg-core"); ?>
+                    </label>
+                    <p class="description">
+                        <?php esc_html_e("Only applies if Projects are not hidden above.", "cdg-core"); ?>
+                    </p>
+                    <div style="margin: 15px 0 0 24px;">
+                        <p>
+                            <label><?php esc_html_e("Plural:", "cdg-core"); ?>
+                                <input type="text" name="project_rename_plural" value="<?php echo esc_attr($s["project_rename_plural"]); ?>" class="regular-text">
+                            </label>
+                        </p>
+                        <p>
+                            <label><?php esc_html_e("Singular:", "cdg-core"); ?>
+                                <input type="text" name="project_rename_singular" value="<?php echo esc_attr($s["project_rename_singular"]); ?>" class="regular-text">
+                            </label>
+                        </p>
+                        <p>
+                            <label><?php esc_html_e("Menu:", "cdg-core"); ?>
+                                <input type="text" name="project_rename_menu" value="<?php echo esc_attr($s["project_rename_menu"]); ?>" class="regular-text">
+                            </label>
+                        </p>
+                        <p>
+                            <label><?php esc_html_e("Icon:", "cdg-core"); ?>
+                                <select name="project_rename_icon">
+                                    <?php foreach (CDG_Core_Defaults::get_available_icons() as $icon => $label): ?>
+                                        <option value="<?php echo esc_attr($icon); ?>" <?php selected($s["project_rename_icon"], $icon); ?>>
+                                            <?php echo esc_html($label); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <h2><?php esc_html_e("Rename Posts", "cdg-core"); ?></h2>
+        <table class="form-table">
             <tr>
                 <th><?php esc_html_e("Rename Posts", "cdg-core"); ?></th>
                 <td>
-                    <label><input type="checkbox" name="enable_post_rename" value="1" <?php checked(
-                        $s["enable_post_rename"],
-                    ); ?>> <?php esc_html_e('Rename "Posts" post type', "cdg-core"); ?></label>
+                    <label>
+                        <input type="checkbox" name="enable_post_rename" value="1" <?php checked($s["enable_post_rename"]); ?>>
+                        <?php esc_html_e('Rename "Posts" post type', "cdg-core"); ?>
+                    </label>
                     <div style="margin: 15px 0 0 24px;">
-                        <p><label><?php esc_html_e(
-                            "Plural:",
-                            "cdg-core",
-                        ); ?> <input type="text" name="post_rename_plural" value="<?php echo esc_attr($s["post_rename_plural"]); ?>" class="regular-text"></label></p>
-                        <p><label><?php esc_html_e(
-                            "Singular:",
-                            "cdg-core",
-                        ); ?> <input type="text" name="post_rename_singular" value="<?php echo esc_attr($s["post_rename_singular"]); ?>" class="regular-text"></label></p>
-                        <p><label><?php esc_html_e(
-                            "Menu:",
-                            "cdg-core",
-                        ); ?> <input type="text" name="post_rename_menu" value="<?php echo esc_attr($s["post_rename_menu"]); ?>" class="regular-text"></label></p>
-                        <p><label><?php esc_html_e("Icon:", "cdg-core"); ?>
-                            <select name="post_rename_icon">
-                                <?php foreach (
-                                    CDG_Core_Post_Rename::get_available_icons()
-                                    as $icon => $label
-                                ): ?>
-                                    <option value="<?php echo esc_attr(
-                                        $icon,
-                                    ); ?>" <?php selected(
-    $s["post_rename_icon"],
-    $icon,
-); ?>><?php echo esc_html($label); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </label></p>
+                        <p>
+                            <label><?php esc_html_e("Plural:", "cdg-core"); ?>
+                                <input type="text" name="post_rename_plural" value="<?php echo esc_attr($s["post_rename_plural"]); ?>" class="regular-text">
+                            </label>
+                        </p>
+                        <p>
+                            <label><?php esc_html_e("Singular:", "cdg-core"); ?>
+                                <input type="text" name="post_rename_singular" value="<?php echo esc_attr($s["post_rename_singular"]); ?>" class="regular-text">
+                            </label>
+                        </p>
+                        <p>
+                            <label><?php esc_html_e("Menu:", "cdg-core"); ?>
+                                <input type="text" name="post_rename_menu" value="<?php echo esc_attr($s["post_rename_menu"]); ?>" class="regular-text">
+                            </label>
+                        </p>
+                        <p>
+                            <label><?php esc_html_e("Icon:", "cdg-core"); ?>
+                                <select name="post_rename_icon">
+                                    <?php foreach (CDG_Core_Defaults::get_available_icons() as $icon => $label): ?>
+                                        <option value="<?php echo esc_attr($icon); ?>" <?php selected($s["post_rename_icon"], $icon); ?>>
+                                            <?php echo esc_html($label); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                        </p>
                     </div>
                 </td>
             </tr>

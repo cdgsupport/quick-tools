@@ -6,7 +6,7 @@
  * for Crawford Design Group client sites.
  *
  * @package CDG_Core
- * @version 1.1.0
+ * @version 1.2.0
  * @author Crawford Design Group
  * @link https://crawforddesigngroup.com
  */
@@ -19,7 +19,7 @@ if (!defined("ABSPATH")) {
 /**
  * Plugin Constants
  */
-define("CDG_CORE_VERSION", "1.1.0");
+define("CDG_CORE_VERSION", "1.2.0");
 define("CDG_CORE_DIR", plugin_dir_path(__FILE__));
 define("CDG_CORE_URL", plugin_dir_url(__FILE__));
 define("CDG_CORE_BASENAME", plugin_basename(__FILE__));
@@ -74,7 +74,24 @@ final class CDG_Core
         "enable_documentation" => true,
         "enable_cpt_widgets" => true,
         "enable_admin_branding" => true,
+
+        // Defaults - Comments
+        "disable_comments" => false,
+
+        // Defaults - Divi Projects
+        "hide_divi_projects" => false,
+        "enable_project_rename" => false,
+        "project_rename_plural" => "Projects",
+        "project_rename_singular" => "Project",
+        "project_rename_menu" => "Projects",
+        "project_rename_icon" => "dashicons-portfolio",
+
+        // Defaults - Post Rename
         "enable_post_rename" => false,
+        "post_rename_plural" => "Slides",
+        "post_rename_singular" => "Slide",
+        "post_rename_menu" => "Slides",
+        "post_rename_icon" => "dashicons-slides",
 
         // WordPress Cleanup
         "remove_wp_version" => true,
@@ -133,12 +150,6 @@ final class CDG_Core
         "enable_gf_fixes" => true,
         "gf_detection_mode" => "auto",
         "gf_manual_pages" => [],
-
-        // Post Rename
-        "post_rename_plural" => "Slides",
-        "post_rename_singular" => "Slide",
-        "post_rename_menu" => "Slides",
-        "post_rename_icon" => "dashicons-slides",
 
         // Admin
         "admin_footer_text" =>
@@ -242,6 +253,9 @@ final class CDG_Core
         new CDG_Core_Security($this);
         new CDG_Core_Performance($this);
 
+        // Defaults (Comments, Projects, Posts)
+        new CDG_Core_Defaults($this);
+
         // Features
         if ($this->get_setting("enable_documentation")) {
             new CDG_Core_Documentation($this);
@@ -253,10 +267,6 @@ final class CDG_Core
 
         if ($this->get_setting("enable_gf_fixes")) {
             new CDG_Core_Gravity_Forms($this);
-        }
-
-        if ($this->get_setting("enable_post_rename")) {
-            new CDG_Core_Post_Rename($this);
         }
 
         // SVG Support - initialize regardless of setting (class checks internally)
