@@ -213,9 +213,6 @@ class CDG_Core_Admin
                 $s["heartbeat_exception_builder"] = !empty(
                     $input["heartbeat_exception_builder"]
                 );
-                $s["heartbeat_exception_gf"] = !empty(
-                    $input["heartbeat_exception_gf"]
-                );
                 break;
 
             case "security":
@@ -224,7 +221,6 @@ class CDG_Core_Admin
                     $input["block_dangerous_uploads"]
                 );
                 $s["remove_powered_by"] = !empty($input["remove_powered_by"]);
-                $s["add_frame_options"] = !empty($input["add_frame_options"]);
                 $s["disable_code_editor"] = !empty(
                     $input["disable_code_editor"]
                 );
@@ -764,9 +760,10 @@ class CDG_Core_Admin
                     <label style="display:block;"><input type="checkbox" name="heartbeat_exception_builder" value="1" <?php checked(
                         $s["heartbeat_exception_builder"],
                     ); ?>> <?php esc_html_e("Divi Visual Builder", "cdg-core"); ?></label>
-                    <label style="display:block;"><input type="checkbox" name="heartbeat_exception_gf" value="1" <?php checked(
-                        $s["heartbeat_exception_gf"],
-                    ); ?>> <?php esc_html_e("Gravity Forms pages", "cdg-core"); ?></label>
+                    <p class="description"><?php esc_html_e(
+                        "When enabled, heartbeat will not be disabled while using the Divi Visual Builder.",
+                        "cdg-core",
+                    ); ?></p>
                 </td>
             </tr>
         </table>
@@ -778,7 +775,7 @@ class CDG_Core_Admin
         ?>
         <h2><?php esc_html_e("Security Hardening", "cdg-core"); ?></h2>
         <p class="description"><?php esc_html_e(
-            "Complements Wordfence. Keep enabled unless you have conflicts.",
+            "Complements Wordfence and SpinupWP. Security headers (X-Frame-Options, HSTS, X-XSS-Protection, X-Content-Type-Options) are handled by SpinupWP at the Nginx level.",
             "cdg-core",
         ); ?></p>
         <table class="form-table">
@@ -795,10 +792,6 @@ class CDG_Core_Admin
                     "remove_powered_by" => [
                         "Remove X-Powered-By",
                         "Hides server information",
-                    ],
-                    "add_frame_options" => [
-                        "Add X-Frame-Options",
-                        "Prevents clickjacking attacks",
                     ],
                     "disable_code_editor" => [
                         "Disable code editor",
@@ -825,7 +818,7 @@ class CDG_Core_Admin
 
         <h2><?php esc_html_e("SVG Upload Support", "cdg-core"); ?></h2>
         <p class="description"><?php esc_html_e(
-            "Allow SVG file uploads with automatic sanitization to remove potentially malicious code.",
+            "Allow SVG file uploads. Use with caution as SVGs can contain malicious code.",
             "cdg-core",
         ); ?></p>
         <table class="form-table">
@@ -843,7 +836,7 @@ class CDG_Core_Admin
                     </label>
                     <p class="description">
                         <?php esc_html_e(
-                            "When enabled, SVG files can be uploaded through the Media Library. All SVGs are automatically sanitized to remove scripts, event handlers, and other potentially dangerous content.",
+                            "When enabled, SVG files can be uploaded through the Media Library.",
                             "cdg-core",
                         ); ?>
                     </p>
@@ -863,48 +856,13 @@ class CDG_Core_Admin
                     </label>
                     <p class="description">
                         <?php esc_html_e(
-                            "When enabled, only users with the manage_options capability (administrators) can upload SVG files. Other users with upload permissions will not be able to upload SVGs.",
+                            "When enabled, only users with the manage_options capability (administrators) can upload SVG files.",
                             "cdg-core",
                         ); ?>
                     </p>
                 </td>
             </tr>
         </table>
-
-        <div class="notice notice-info inline" style="margin: 20px 0;">
-            <p>
-                <strong><?php esc_html_e(
-                    "SVG Security Information",
-                    "cdg-core",
-                ); ?></strong><br>
-                <?php esc_html_e(
-                    "SVG files are XML-based and can contain embedded scripts. The sanitization process:",
-                    "cdg-core",
-                ); ?>
-            </p>
-            <ul style="list-style: disc; margin-left: 20px;">
-                <li><?php esc_html_e(
-                    "Removes all script tags and JavaScript",
-                    "cdg-core",
-                ); ?></li>
-                <li><?php esc_html_e(
-                    "Strips event handler attributes (onclick, onload, etc.)",
-                    "cdg-core",
-                ); ?></li>
-                <li><?php esc_html_e(
-                    "Removes external entity references",
-                    "cdg-core",
-                ); ?></li>
-                <li><?php esc_html_e(
-                    "Filters potentially dangerous elements and attributes",
-                    "cdg-core",
-                ); ?></li>
-                <li><?php esc_html_e(
-                    "Validates the SVG structure before saving",
-                    "cdg-core",
-                ); ?></li>
-            </ul>
-        </div>
         <?php
     }
 

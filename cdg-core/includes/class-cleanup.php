@@ -62,8 +62,9 @@ class CDG_Core_Cleanup
       9999
     );
 
-    // Heartbeat control - use 'wp' hook so $post is available for GF check
-    add_action("wp", [$this, "control_heartbeat_frontend"]);
+    // Heartbeat control
+    // Use init hook for reliable script deregistration before wp_enqueue_scripts runs
+    add_action("init", [$this, "control_heartbeat_frontend"]);
     add_action("admin_init", [$this, "control_heartbeat_admin"]);
   }
 
@@ -351,10 +352,13 @@ class CDG_Core_Cleanup
   /**
    * Control heartbeat on frontend
    *
+   * Runs on 'init' hook for reliable script deregistration before wp_enqueue_scripts.
+   *
    * @return void
    */
   public function control_heartbeat_frontend(): void
   {
+    // Only run on frontend
     if (is_admin()) {
       return;
     }
@@ -362,13 +366,6 @@ class CDG_Core_Cleanup
     // Check for builder exception
     if ($this->plugin->get_setting("heartbeat_exception_builder")) {
       if ($this->is_divi_builder_active()) {
-        return;
-      }
-    }
-
-    // Check for Gravity Forms exception
-    if ($this->plugin->get_setting("heartbeat_exception_gf")) {
-      if ($this->page_has_gravity_form()) {
         return;
       }
     }
@@ -407,41 +404,6 @@ class CDG_Core_Cleanup
 
     if (isset($_GET["et_fb"])) {
       return sanitize_text_field(wp_unslash($_GET["et_fb"])) === "1";
-    }
-
-    return false;
-  }
-
-  /**
-   * Check if current page has Gravity Form
-   *
-   * @return bool
-   */
-  private function page_has_gravity_form(): bool
-  {
-    if (!class_exists("GFForms")) {
-      return false;
-    }
-
-    global $post;
-
-    if (!$post) {
-      return false;
-    }
-
-    // Check for shortcode
-    if (has_shortcode($post->post_content, "gravityform")) {
-      return true;
-    }
-
-    // Check for block
-    if (function_exists("has_block") && has_block("gravityforms/form", $post)) {
-      return true;
-    }
-
-    // Check in Divi content
-    if (strpos((string) $post->post_content, "[gravityform") !== false) {
-      return true;
     }
 
     return false;
